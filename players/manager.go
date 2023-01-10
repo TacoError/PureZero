@@ -1,6 +1,9 @@
 package players
 
-import "github.com/go-gl/mathgl/mgl32"
+import (
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/sandertv/gophertunnel/minecraft"
+)
 
 var players []*Player
 
@@ -18,6 +21,19 @@ func AddPlayer(
 		Position:        position,
 		UniqueID:        UniqueID,
 	})
+}
+
+func SetHitBoxAll(horizontal, vertical float32, conn *minecraft.Conn) {
+	for _, player := range players {
+		player.SetHitBox(horizontal, vertical)
+	}
+	UpdatePlayers(conn)
+}
+
+func UpdatePlayers(conn *minecraft.Conn) {
+	for _, player := range players {
+		player.Update(conn)
+	}
 }
 
 func GetPlayerByRuntimeID(id uint64) *Player {

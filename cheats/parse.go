@@ -58,6 +58,9 @@ func ParseMessage(message string, conn *minecraft.Conn, serverConn *minecraft.Co
 		return true
 	}
 
+	if len(messageSplit) < 1 {
+		return true
+	}
 	cheat := GetCheat(message)
 	if cheat == nil {
 		return false

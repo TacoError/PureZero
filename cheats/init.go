@@ -9,6 +9,10 @@ func LoadCheats() {
 		newSetting("cool", "Example setting", "Default value"),
 	}, exampleEnable, exampleDisable)
 	makeEffectCheat("Haste", "Give yourself haste", 3)
+	newCheat("HitBox", "Change all players HitBox", []*Setting{
+		newSetting("width", "Width of the hitBox", "3"),
+		newSetting("height", "Height of the hitBox", "2"),
+	}, hitBoxEnable, hitBoxDisable)
 }
 
 func newCheat(

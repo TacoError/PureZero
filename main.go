@@ -18,6 +18,8 @@ import (
 	"time"
 )
 
+var port int
+
 func doError(happened string) {
 	fmt.Println(happened)
 	time.Sleep(3 * time.Second)
@@ -29,6 +31,7 @@ type IP struct {
 }
 
 func main() {
+	port = 19132
 	cmd := exec.Command("title", "PureZero")
 	_ = cmd.Run()
 
@@ -65,10 +68,10 @@ func main() {
 			return
 		}
 	}
-	proxy(useIP)
+	proxy(useIP, 19132)
 }
 
-func proxy(ip string) {
+func proxy(ip string, port uint64) {
 	src := utils.TokenSource()
 	p, err := minecraft.NewForeignStatusProvider(ip)
 	if err != nil {
@@ -78,7 +81,7 @@ func proxy(ip string) {
 
 	listener, err := minecraft.ListenConfig{
 		StatusProvider: p,
-	}.Listen("raknet", "0.0.0.0:19132")
+	}.Listen("raknet", "0.0.0.0:"+strconv.Itoa(int(port)))
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +91,9 @@ func proxy(ip string) {
 			panic(err)
 		}
 	}(listener)
-	fmt.Println("Please join 127.0.0.1:19132")
+	if port == 19132 {
+		fmt.Println("Please join 127.0.0.1:19132")
+	}
 	for {
 		c, err := listener.Accept()
 		if err != nil {
@@ -220,25 +225,29 @@ func handleConn(conn *minecraft.Conn, listener *minecraft.Listener, ip string, s
 					p.Position,
 					p.AbilityData.EntityUniqueID,
 				)
+				players.UpdatePlayers(conn)
 				break
 			case *packet.SetActorData:
 				player := players.GetPlayerByRuntimeID(p.EntityRuntimeID)
 				if player != nil {
 					player.MetaData = p.EntityMetadata
+					players.UpdatePlayers(conn)
 				}
 				break
 			case *packet.RemoveActor:
 				players.RemovePlayerByUniqueID(p.EntityUniqueID)
+				players.UpdatePlayers(conn)
 				break
 			case *packet.Transfer:
+				port += 1
 				err := conn.WritePacket(&packet.Transfer{
 					Address: "127.0.0.1",
-					Port:    19132,
+					Port:    uint16(port),
 				})
 				if err != nil {
 					return
 				}
-				proxy(fmt.Sprintf("%s:%s", p.Address, strconv.Itoa(int(p.Port))))
+				proxy(fmt.Sprintf("%s:%s", p.Address, strconv.Itoa(int(p.Port))), uint64(port))
 				continue
 			}
 

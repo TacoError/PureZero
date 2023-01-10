@@ -3,6 +3,7 @@ package players
 import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/sandertv/gophertunnel/minecraft"
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
 	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 )
 
@@ -17,6 +18,12 @@ type Player struct {
 	// https://github.com/Sandertv/gophertunnel/blob/master/minecraft/protocol/entity_metadata.go
 	MetaData map[uint32]any
 	Position mgl32.Vec3
+}
+
+// SetHitBox - an Update will need to be called for this to take place
+func (p *Player) SetHitBox(horizontal, vertical float32) {
+	p.MetaData[protocol.EntityDataKeyWidth] = horizontal
+	p.MetaData[protocol.EntityDataKeyHeight] = vertical
 }
 
 func (p *Player) Update(conn *minecraft.Conn) {
